@@ -208,3 +208,8 @@ __marimo__/
 
 # airflow logs
 logs/
+
+# airflow local configs
+airflow.cfg
+airflow.db
+nyc_taxi_airflow/*.json*
