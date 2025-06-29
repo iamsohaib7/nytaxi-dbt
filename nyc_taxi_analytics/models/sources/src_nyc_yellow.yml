@@ -1,0 +1,8 @@
+version: 2
+
+sources:
+  - name: nyc_yellow
+    schema: ingest
+    database: NY_TAXI_DB
+    tables:
+      - name: nyc_yellow_taxi_trips_raw_data

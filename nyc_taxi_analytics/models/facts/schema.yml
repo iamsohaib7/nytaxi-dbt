@@ -1,0 +1,53 @@
+version: 2
+
+models:
+  - name: fact_yellow_trip
+    description: >
+      Core fact table for yellow taxi trips. Includes financial metrics, foreign keys to dimensions,
+      and derived time fields for analysis.
+    columns:
+      - name: trip_id
+        description: Unique hash-based ID for trip.
+        tests: [unique, not_null]
+      - name: trip_date
+        description: Trip date (FK to dim_date).
+      - name: pickup_ts
+        description: Pickup timestamp.
+      - name: dropoff_ts
+        description: Dropoff timestamp.
+      - name: pickup_hour
+        description: Hour extracted from pickup_ts.
+      - name: pickup_weekday_num
+        description: Numeric day of week (1-7).
+      - name: trip_duration_min
+        description: Trip duration in minutes.
+      - name: passenger_count
+        description: Number of passengers.
+      - name: trip_distance
+        description: Trip distance in miles.
+      - name: ratecodeid
+        description: FK to dim_ratecode.
+      - name: payment_type
+        description: FK to dim_payment.
+      - name: pulocationid
+        description: FK to dim_location_zone (pickup).
+      - name: dolocationid
+        description: FK to dim_location_zone (dropoff).
+      - name: fare_amount
+        description: Fare charged for the trip.
+      - name: extra
+        description: Extra charges.
+      - name: mta_tax
+        description: MTA tax.
+      - name: tip_amount
+        description: Tip paid.
+      - name: tolls_amount
+        description: Toll charges.
+      - name: improvement_surcharge
+        description: Additional surcharge.
+      - name: congestion_surcharge
+        description: Congestion charge.
+      - name: airport_fee
+        description: Airport fee if applicable.
+      - name: total_amount
+        description: Total amount charged for the trip.

@@ -1,0 +1,46 @@
+version: 2
+
+models:
+  - name: stg_yellow_tripdata
+    description: >
+      Staging model for yellow taxi data loaded from raw ingest table.
+      Performs basic cleaning and type casting from VARCHAR.
+    columns:
+      - name: VendorID
+        description: Code indicating the provider associated with the trip.
+      - name: tpep_pickup_datetime
+        description: Pickup date and time (raw string format).
+      - name: tpep_dropoff_datetime
+        description: Dropoff date and time (raw string format).
+      - name: passenger_count
+        description: Number of passengers.
+      - name: trip_distance
+        description: Distance of the trip in miles.
+      - name: RatecodeID
+        description: Rate code used.
+      - name: store_and_fwd_flag
+        description: Flag indicating if the trip record was sent immediately.
+      - name: PULocationID
+        description: Pickup location zone ID.
+      - name: DOLocationID
+        description: Dropoff location zone ID.
+      - name: payment_type
+        description: Payment method.
+      - name: fare_amount
+        description: Fare charged.
+      - name: extra
+        description: Extra charges (e.g., night surcharge).
+      - name: mta_tax
+        description: MTA tax charged.
+      - name: tip_amount
+        description: Tip paid by passenger.
+      - name: tolls_amount
+        description: Toll charges.
+      - name: improvement_surcharge
+        description: Improvement surcharge fee.
+      - name: total_amount
+        description: Total amount charged.
+      - name: congestion_surcharge
+        description: Congestion charge in NYC.
+      - name: Airport_fee
+        description: Airport usage fee.

@@ -1,0 +1,122 @@
+version: 2
+
+models:
+  - name: mart_trips_daily_summary
+    description: Daily summary of yellow taxi trips, joined with date dimension.
+    columns:
+      - name: trip_date
+        description: Date of the trip.
+        tests: [not_null]
+      - name: total_trips
+        description: Number of trips on that date.
+      - name: total_revenue
+        description: Total revenue earned that day.
+      - name: avg_distance
+        description: Average trip distance for the day.
+      - name: avg_duration_min
+        description: Average trip duration in minutes.
+      - name: weekday_name
+        description: Day of the week.
+      - name: is_weekend
+        description: True if trip was on a weekend.
+
+  - name: mart_revenue_by_payment_type
+    description: Revenue breakdown grouped by payment method.
+    columns:
+      - name: payment_desc
+        description: Type of payment used.
+        tests: [not_null]
+      - name: trip_count
+        description: Number of trips using this payment method.
+      - name: total_revenue
+        description: Total amount collected by this payment type.
+      - name: avg_revenue_per_trip
+        description: Average amount per trip.
+
+  - name: mart_location_summary
+    description: Summarized trip counts and average fare/distance for pickup-dropoff zone pairs.
+    columns:
+      - name: pickup_zone
+        description: Name of pickup zone.
+      - name: dropoff_zone
+        description: Name of dropoff zone.
+      - name: trip_count
+        description: Number of trips between those zones.
+      - name: avg_total_amount
+        description: Average fare between those zones.
+      - name: avg_distance
+        description: Average distance between those zones.
+
+  - name: mart_peak_hours
+    description: Aggregated trips and metrics by hour of the day.
+    columns:
+      - name: pickup_hour
+        description: Hour of pickup (0-23).
+        tests: [not_null]
+      - name: trip_count
+        description: Number of trips during that hour.
+      - name: avg_total
+        description: Average total amount.
+      - name: avg_distance
+        description: Average distance.
+
+  - name: mart_airport_trip_summary
+    description: Segregates trips as Airport or Non-Airport based on location zone names.
+    columns:
+      - name: trip_type
+        description: "'Airport Trip' or 'Non-Airport Trip'."
+      - name: trip_count
+        description: Number of such trips.
+      - name: avg_fare
+        description: Average total fare.
+      - name: avg_distance
+        description: Average distance.
+      - name: avg_duration
+        description: Average trip duration.
+
+  - name: mart_top_zones_by_revenue
+    description: Pickup zones ranked by total revenue generation.
+    columns:
+      - name: pickup_zone
+        description: Pickup location zone.
+      - name: trip_count
+        description: Number of trips from the zone.
+      - name: total_revenue
+        description: Total revenue from the zone.
+      - name: avg_fare
+        description: Average fare for trips from this zone.
+
+  - name: mart_monthly_trends
+    description: Monthly summary of trip volume and revenue.
+    columns:
+      - name: month
+        description: First day of month (truncated date).
+        tests: [not_null]
+      - name: total_trips
+        description: Number of trips in the month.
+      - name: total_revenue
+        description: Total revenue for the month.
+      - name: avg_fare
+        description: Average fare in that month.
+
+  - name: mart_fare_bins
+    description: Trip counts and metrics grouped by fare amount ranges.
+    columns:
+      - name: fare_bin
+        description: Fare amount group (e.g., <$10, $10–19, etc.).
+      - name: trip_count
+        description: Number of trips in this bin.
+      - name: avg_distance
+        description: Avg distance for this group.
+      - name: avg_duration
+        description: Avg duration for this group.
+
+  - name: mart_location_time_heatmap
+    description: Number of trips by pickup zone and pickup hour, useful for heatmaps.
+    columns:
+      - name: pickup_zone
+        description: Zone of pickup.
+      - name: pickup_hour
+        description: Hour of day.
+      - name: trip_count
+        description: Number of trips.

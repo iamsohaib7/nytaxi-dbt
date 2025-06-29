@@ -31,6 +31,24 @@ clean-targets:         # directories to be removed by `dbt clean`
 # files using the `{{ config(...) }}` macro.
 models:
   nyc_taxi_analytics:
-    # Config indicated by + and applies to all files under models/example/
-    example:
+    sources:
+      +schema: ingest
+    staging:
+      +schema: staging
       +materialized: view
+    dims:
+      +schema: analytics
+      +materialized: table
+    facts:
+      +schema: analytics
+      +materialized: incremental
+    marts:
+      +schema: analytics
+      +materialized: incremental
+
+seeds:
+  nyc_taxi_analytics:
+    taxi_zone_lookup:
+      file: taxi_zone_lookup.csv
+      header: true
+      delimiter: ","

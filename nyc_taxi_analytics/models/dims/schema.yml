@@ -1,0 +1,46 @@
+version: 2
+
+models:
+  - name: dim_date
+    description: Date dimension generated from pickup dates.
+    columns:
+      - name: date
+        description: Unique trip date.
+        tests: [unique, not_null]
+      - name: weekday_num
+        description: Numeric day of week (1=Sunday, 7=Saturday).
+      - name: weekday_name
+        description: Name of the weekday.
+      - name: is_weekend
+        description: Boolean flag for Saturday/Sunday.
+
+  - name: dim_payment
+    description: Lookup table for payment type descriptions.
+    columns:
+      - name: payment_type
+        description: Code for payment method.
+        tests: [unique, not_null]
+      - name: payment_desc
+        description: Description of payment method.
+
+  - name: dim_ratecode
+    description: Lookup for RatecodeID to description mapping.
+    columns:
+      - name: ratecodeid
+        description: Code for rate.
+        tests: [unique, not_null]
+      - name: ratecode_desc
+        description: Description of the rate code.
+
+  - name: dim_location_zone
+    description: Lookup table for taxi pickup/dropoff zones from CSV.
+    columns:
+      - name: location_id
+        description: Unique LocationID in zone map.
+        tests: [unique, not_null]
+      - name: Borough
+        description: Borough the location belongs to.
+      - name: zone_name
+        description: Name of the taxi zone.
+      - name: service_zone
+        description: Service area designation.
