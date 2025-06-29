@@ -2,11 +2,38 @@ version: 2
 
 models:
   - name: mart_trips_daily_summary
-    description: Daily summary of yellow taxi trips, joined with date dimension.
+    description: Daily summary of yellow taxi trips with trend analysis and moving averages.
     columns:
       - name: trip_date
-        description: Date of the trip.
+        description: Date of the trip (FK to dim_date).
         tests: [not_null, unique]
+      - name: date
+        description: Calendar date.
+        tests: [not_null]
+      - name: weekday_name
+        description: Day of the week name.
+        tests: [not_null]
+      - name: day_of_week
+        description: Numeric day of week (0=Sunday, 6=Saturday).
+        tests:
+          - accepted_values:
+              values: [0, 1, 2, 3, 4, 5, 6]
+      - name: is_weekend
+        description: True if Saturday or Sunday.
+        tests:
+          - accepted_values:
+              values: [true, false]
+      - name: month_name
+        description: Name of the month.
+        tests: [not_null]
+      - name: year
+        description: Calendar year.
+        tests: [not_null]
+      - name: quarter
+        description: Quarter of the year (1-4).
+        tests:
+          - accepted_values:
+              values: [1, 2, 3, 4]
       - name: total_trips
         description: Number of trips on that date.
         tests:
@@ -17,37 +44,88 @@ models:
         tests:
           - dbt_utils.expression_is_true:
               expression: ">= 0"
+      - name: avg_fare
+        description: Average fare amount for the day.
+        tests:
+          - dbt_utils.expression_is_true:
+              expression: ">= 0"
       - name: avg_distance
-        description: Average trip distance for the day.
+        description: Average trip distance in miles.
+        tests:
+          - dbt_utils.expression_is_true:
+              expression: ">= 0"
       - name: avg_duration_min
         description: Average trip duration in minutes.
-      - name: weekday_name
-        description: Day of the week.
-        tests: [not_null]
-      - name: is_weekend
-        description: True if trip was on a weekend.
         tests:
-          - accepted_values:
-              values: [true, false]
+          - dbt_utils.expression_is_true:
+              expression: ">= 0"
+      - name: total_tips
+        description: Total tip amount for the day.
+      - name: avg_tip
+        description: Average tip amount per trip.
+      - name: unique_pickup_zones
+        description: Number of unique pickup locations.
+      - name: unique_dropoff_zones
+        description: Number of unique dropoff locations.
+      - name: trips_7day_avg
+        description: 7-day moving average of trips.
+      - name: revenue_7day_avg
+        description: 7-day moving average of revenue.
+      - name: trips_dod_change_pct
+        description: Day-over-day percentage change in trips.
+      - name: trips_wow_change_pct
+        description: Week-over-week percentage change in trips.
+      - name: revenue_per_trip
+        description: Average revenue per trip.
 
   - name: mart_revenue_by_payment_type
-    description: Revenue breakdown grouped by payment method.
+    description: Revenue breakdown by payment method with tip analysis.
     columns:
       - name: payment_desc
-        description: Type of payment used.
+        description: Payment method description.
+        tests: [not_null]
+      - name: payment_type
+        description: Payment type code.
         tests: [not_null]
       - name: trip_count
         description: Number of trips using this payment method.
         tests:
           - dbt_utils.expression_is_true:
               expression: ">= 0"
+      - name: pct_of_trips
+        description: Percentage of total trips.
+        tests:
+          - dbt_utils.expression_is_true:
+              expression: ">= 0 and <= 100"
+      - name: popularity_rank
+        description: Rank by number of trips.
       - name: total_revenue
-        description: Total amount collected by this payment type.
-      - name: avg_revenue_per_trip
-        description: Average amount per trip.
+        description: Total revenue for this payment type.
+        tests:
+          - dbt_utils.expression_is_true:
+              expression: ">= 0"
+      - name: pct_of_revenue
+        description: Percentage of total revenue.
+        tests:
+          - dbt_utils.expression_is_true:
+              expression: ">= 0 and <= 100"
+      - name: avg_fare
+        description: Average fare amount.
+      - name: total_tips
+        description: Total tips (only for credit cards).
+      - name: avg_tip
+        description: Average tip amount (only for credit cards).
+      - name: tip_pct
+        description: Average tip as percentage of fare (credit cards only).
+      - name: avg_distance
+        description: Average trip distance.
+      - name: avg_duration
+        description: Average trip duration.
+      - name: revenue_per_mile
+        description: Average revenue per mile traveled.
 
   - name: mart_location_summary
-    description: Summarized trip counts and average fare/distance for pickup-dropoff zone pairs.
+    description: Top 100 pickup-dropoff route pairs by trip volume with comprehensive metrics.
     columns:
       - name: pickup_zone
         description: Name of pickup zone.
@@ -55,15 +133,49 @@ models:
       - name: dropoff_zone
         description: Name of dropoff zone.
         tests: [not_null]
+      - name: pickup_borough
+        description: Borough of pickup location.
+        tests: [not_null]
+      - name: dropoff_borough
+        description: Borough of dropoff location.
+        tests: [not_null]
       - name: trip_count
-        description: Number of trips between those zones.
+        description: Number of trips on this route (minimum 10).
+        tests:
+          - dbt_utils.expression_is_true:
+              expression: ">= 10"
       - name: avg_total_amount
-        description: Average fare between those zones.
-      - name: avg_distance
-        description: Average distance between those zones.
+        description: Average fare for this route.
+      - name: avg_distance_miles
+        description: Average distance in miles.
+      - name: avg_duration_min
+        description: Average duration in minutes.
+      - name: total_revenue
+        description: Total revenue from this route.
+      - name: avg_tip
+        description: Average tip amount.
+      - name: fare_stddev
+        description: Standard deviation of fares (variability).
+      - name: min_fare
+        description: Minimum fare on this route.
+      - name: max_fare
+        description: Maximum fare on this route.
+      - name: trip_type
+        description: Inter-Borough or Same-Borough.
+        tests:
+          - accepted_values:
+              values: ['Inter-Borough', 'Same-Borough']
+      - name: pct_of_total_trips
+        description: Percentage of all trips.
+      - name: pct_of_total_revenue
+        description: Percentage of all revenue.
+      - name: popularity_rank
+        description: Rank by trip count.
+      - name: revenue_rank
+        description: Rank by total revenue.
 
   - name: mart_peak_hours
-    description: Aggregated trips and metrics by hour of the day.
+    description: Hourly analysis with peak/off-peak classification and weekday/weekend split.
     columns:
       - name: pickup_hour
         description: Hour of pickup (0-23).
@@ -71,82 +183,234 @@ models:
           - not_null
           - dbt_utils.expression_is_true:
               expression: ">= 0 and <= 23"
-      - name: trip_count
-        description: Number of trips during that hour.
-      - name: avg_total
-        description: Average total amount.
+      - name: time_period
+        description: Time period classification.
+        tests:
+          - accepted_values:
+              values: ['Morning Rush', 'Evening Rush', 'Midday', 'Night', 'Late Night/Early Morning']
+      - name: total_trips
+        description: Total trips in this hour.
+      - name: weekday_trips
+        description: Trips on weekdays.
+      - name: weekend_trips
+        description: Trips on weekends.
+      - name: pct_of_daily_trips
+        description: Percentage of daily trips.
+      - name: is_peak_hour
+        description: True if in top 25% of traffic hours.
+        tests:
+          - accepted_values:
+              values: [true, false]
+      - name: avg_fare
+        description: Overall average fare.
+      - name: weekday_avg_fare
+        description: Average fare on weekdays.
+      - name: weekend_avg_fare
+        description: Average fare on weekends.
+      - name: total_revenue
+        description: Total revenue for this hour.
+      - name: pct_of_daily_revenue
+        description: Percentage of daily revenue.
       - name: avg_distance
-        description: Average distance.
+        description: Average trip distance.
+      - name: avg_duration
+        description: Average trip duration.
+      - name: demand_intensity
+        description: Relative demand intensity (0-1 scale).
+        tests:
+          - dbt_utils.expression_is_true:
+              expression: ">= 0 and <= 1"
 
   - name: mart_airport_trip_summary
-    description: Segregates trips as Airport or Non-Airport based on location zone names.
+    description: Analysis of airport vs non-airport trips with specific airport breakdown.
     columns:
       - name: trip_type
-        description: "'Airport Trip' or 'Non-Airport Trip'."
+        description: Airport Trip or Non-Airport Trip.
         tests:
           - accepted_values:
               values: ['Airport Trip', 'Non-Airport Trip']
+      - name: airport_name
+        description: Specific airport or Non-Airport.
+        tests:
+          - accepted_values:
+              values: ['JFK', 'LaGuardia', 'Newark', 'Other Airport', 'Non-Airport']
       - name: trip_count
-        description: Number of such trips.
+        description: Number of trips.
       - name: avg_fare
         description: Average total fare.
-      - name: avg_distance
-        description: Average distance.
-      - name: avg_duration
-        description: Average trip duration.
+      - name: avg_distance_miles
+        description: Average distance in miles.
+      - name: avg_duration_min
+        description: Average duration in minutes.
+      - name: avg_tip
+        description: Average tip amount.
+      - name: avg_credit_card_tip
+        description: Average tip for credit card payments.
+      - name: total_revenue
+        description: Total revenue from these trips.
+      - name: pct_of_all_trips
+        description: Percentage of all trips.
 
   - name: mart_top_zones_by_revenue
-    description: Pickup zones ranked by total revenue generation.
+    description: Top 20 pickup zones ranked by total revenue with comprehensive metrics.
     columns:
       - name: pickup_zone
-        description: Pickup location zone.
+        description: Pickup location zone name.
+        tests: [not_null]
+      - name: borough
+        description: Borough of the zone.
+        tests: [not_null]
+      - name: service_zone
+        description: Service zone designation.
         tests: [not_null]
       - name: trip_count
         description: Number of trips from the zone.
+      - name: pct_of_total_trips
+        description: Percentage of all trips.
       - name: total_revenue
         description: Total revenue from the zone.
+      - name: pct_of_total_revenue
+        description: Percentage of total revenue.
       - name: avg_fare
-        description: Average fare for trips from this zone.
+        description: Average fare from this zone.
+      - name: revenue_rank
+        description: Rank by total revenue (1-20).
+        tests:
+          - dbt_utils.expression_is_true:
+              expression: ">= 1 and <= 20"
+      - name: volume_rank
+        description: Rank by trip count.
+      - name: avg_fare_rank
+        description: Rank by average fare.
+      - name: avg_distance
+        description: Average trip distance from this zone.
+      - name: avg_duration
+        description: Average trip duration from this zone.
+      - name: avg_daily_revenue
+        description: Average revenue per active day.
+      - name: avg_daily_trips
+        description: Average trips per active day.
+      - name: unique_destinations
+        description: Number of unique dropoff zones.
+      - name: avg_tip
+        description: Average tip amount.
+      - name: tip_pct
+        description: Average tip as percentage of fare.
 
   - name: mart_monthly_trends
-    description: Monthly summary of trip volume and revenue.
+    description: Monthly aggregations with month-over-month trend analysis.
     columns:
       - name: month
-        description: First day of month (truncated date).
+        description: First day of month (date truncated).
         tests: [not_null]
+      - name: year
+        description: Calendar year.
+        tests: [not_null]
+      - name: month_num
+        description: Month number (1-12).
+        tests:
+          - accepted_values:
+              values: [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12]
+      - name: year_month
+        description: Year-month string (YYYY-MM).
+      - name: month_name
+        description: Name of the month.
       - name: total_trips
         description: Number of trips in the month.
       - name: total_revenue
         description: Total revenue for the month.
       - name: avg_fare
-        description: Average fare in that month.
+        description: Average fare in the month.
+      - name: avg_distance
+        description: Average trip distance.
+      - name: avg_duration
+        description: Average trip duration.
+      - name: total_tips
+        description: Total tips collected.
+      - name: avg_tip
+        description: Average tip per trip.
+      - name: avg_daily_trips
+        description: Average trips per operating day.
+      - name: avg_daily_revenue
+        description: Average revenue per operating day.
+      - name: unique_pickup_locations
+        description: Count of unique pickup zones used.
+      - name: unique_dropoff_locations
+        description: Count of unique dropoff zones used.
+      - name: trips_mom_change_pct
+        description: Month-over-month percentage change in trips.
+      - name: revenue_mom_change_pct
+        description: Month-over-month percentage change in revenue.
+      - name: cumulative_trips
+        description: Running total of trips.
+      - name: cumulative_revenue
+        description: Running total of revenue.
 
   - name: mart_fare_bins
-    description: Trip counts and metrics grouped by fare amount ranges.
+    description: Trip distribution across fare ranges with proper ordering.
     columns:
       - name: fare_bin
-        description: Fare amount group (e.g., <$10, $10–19, etc.).
+        description: Fare range category.
         tests: [not_null]
+      - name: fare_bin_order
+        description: Numeric order for sorting (1-5).
+        tests:
+          - accepted_values:
+              values: [1, 2, 3, 4, 5]
       - name: trip_count
-        description: Number of trips in this bin.
-      - name: avg_distance
-        description: Avg distance for this group.
-      - name: avg_duration
-        description: Avg duration for this group.
+        description: Number of trips in this fare range.
+      - name: pct_of_trips
+        description: Percentage of total trips.
+      - name: total_revenue
+        description: Total revenue from this fare range.
+      - name: pct_of_revenue
+        description: Percentage of total revenue.
+      - name: avg_fare
+        description: Average fare in this range.
+      - name: avg_distance_miles
+        description: Average distance for this fare range.
+      - name: avg_duration_min
+        description: Average duration for this fare range.
+      - name: avg_tip
+        description: Average tip for this fare range.
+      - name: avg_fare_per_mile
+        description: Average fare per mile traveled.
 
   - name: mart_location_time_heatmap
-    description: Number of trips by pickup zone and pickup hour, useful for heatmaps.
+    description: Pickup demand by zone, hour, and weekend/weekday for heatmap visualization.
     columns:
       - name: pickup_zone
         description: Zone of pickup.
         tests: [not_null]
+      - name: borough
+        description: Borough of pickup zone.
+        tests: [not_null]
       - name: pickup_hour
-        description: Hour of day.
+        description: Hour of day (0-23).
         tests:
           - dbt_utils.expression_is_true:
               expression: ">= 0 and <= 23"
+      - name: is_weekend
+        description: True if weekend, false if weekday.
+        tests:
+          - accepted_values:
+              values: [true, false]
       - name: trip_count
-        description: Number of trips.
+        description: Number of trips (minimum 10 for noise reduction).
         tests:
           - dbt_utils.expression_is_true:
-              expression: ">= 0"
+              expression: ">= 10"
+      - name: zone_total_trips
+        description: Total trips for this zone.
+      - name: pct_of_zone_trips
+        description: Percentage of zone's total trips.
+      - name: is_peak_hour
+        description: True if in top 10% of hours for this zone.
+        tests:
+          - accepted_values:
+              values: [true, false]
+      - name: hour_intensity
+        description: Relative intensity for heatmap coloring (0-1).
+        tests:
+          - dbt_utils.expression_is_true:
+              expression: ">= 0 and <= 1"

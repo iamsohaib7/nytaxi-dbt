@@ -1,5 +1,4 @@
 {{ config(materialized='view') }}
-
 select
   vendorid,
   tpep_pickup_datetime,
@@ -8,8 +7,8 @@ select
   trip_distance,
   ratecodeid,
   store_and_fwd_flag,
-  pulocationid,
-  dolocationid,
+  pulocationid,  
+  dolocationid,  
   payment_type,
   fare_amount,
   extra,
