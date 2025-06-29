@@ -9,6 +9,7 @@ from airflow.providers.snowflake.transfers.copy_into_snowflake import (
 from airflow.providers.google.cloud.hooks.gcs import GCSHook
 from airflow.exceptions import AirflowSkipException
 from airflow.providers.standard.operators.python import get_current_context
+from airflow.providers.standard.operators.bash import BashOperator
 
 from datetime import datetime, timedelta
 import os
@@ -24,8 +25,9 @@ load_dotenv(BASE_DIR / ".env")
 BUCKET_NAME = os.getenv("BUCKET_NAME")
 SNOWFLAKE_CONN_ID = os.getenv("SNOWFLAKE_CONN_ID")
 GCP_CONN_ID = os.getenv("GCP_CONN_ID")
-STAGE_PATH = os.getenv("STAGE_PATH")  # e.g. @gcs_stage
+STAGE_PATH = os.getenv("STAGE_PATH")
 RAW_TABLE = "nyc_yellow_taxi_trips_raw_data"
+DBT_RUN_CMD = os.getenv("DBT_RUN_CMD")
 
 # Checkpoint file for processed files
 CHECKPOINT_FILE = os.path.join(
@@ -87,13 +89,13 @@ default_args = {
 
 # DAG definition
 with DAG(
-    dag_id="gcs_to_snowflake_incremental",
+    dag_id="gcs_to_snowflake_and_DBT_transformation",
     schedule=timedelta(hours=1),
     catchup=False,
     default_args=default_args,
     render_template_as_native_obj=True,
     tags=["gcs", "snowflake", "incremental"],
-    description="Incremental load from GCS to Snowflake using filtered files",
+    description="Incremental load from GCS to Snowflake using filtered files and Transform the data in star schema using dbt",
 ) as dag:
 
     wait_for_files = GCSObjectsWithPrefixExistenceSensor(
@@ -122,4 +124,8 @@ with DAG(
         copy_options="MATCH_BY_COLUMN_NAME=CASE_INSENSITIVE",
     )
 
-    wait_for_files >> filter_task >> load_filtered_files
+    run_dbt = BashOperator(
+        task_id="run_dbt_transformation",
+        bash_command=DBT_RUN_CMD
+    )
+    wait_for_files >> filter_task >> load_filtered_files >> run_dbt
