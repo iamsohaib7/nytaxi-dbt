@@ -1,23 +1,29 @@
 {{ config(materialized='table') }}
 
-SELECT
-  DISTINCT
+SELECT DISTINCT
+  DATE(TRY_TO_TIMESTAMP(tpep_pickup_datetime)) AS date_id,
   DATE(TRY_TO_TIMESTAMP(tpep_pickup_datetime)) AS date,
-  EXTRACT(dayofweek FROM TRY_TO_TIMESTAMP(tpep_pickup_datetime)) AS weekday_num,
-  DECODE(
-    EXTRACT(dayofweek FROM TRY_TO_TIMESTAMP(tpep_pickup_datetime)),
-    1, 'Sunday',
-    2, 'Monday',
-    3, 'Tuesday',
-    4, 'Wednesday',
-    5, 'Thursday',
-    6, 'Friday',
-    7, 'Saturday'
-  ) AS weekday_name,
-  DECODE(
-    EXTRACT(dayofweek FROM TRY_TO_TIMESTAMP(tpep_pickup_datetime)),
-    1, TRUE,
-    7, TRUE,
-    FALSE
-  ) AS is_weekend
+  
+  -- Day attributes
+  DAYOFWEEK(DATE(TRY_TO_TIMESTAMP(tpep_pickup_datetime))) AS day_of_week,
+  DAYNAME(DATE(TRY_TO_TIMESTAMP(tpep_pickup_datetime))) AS day_name,
+  DAY(DATE(TRY_TO_TIMESTAMP(tpep_pickup_datetime))) AS day_of_month,
+  DAYOFYEAR(DATE(TRY_TO_TIMESTAMP(tpep_pickup_datetime))) AS day_of_year,
+  
+  -- Week attributes
+  WEEKOFYEAR(DATE(TRY_TO_TIMESTAMP(tpep_pickup_datetime))) AS week_of_year,
+  CASE 
+    WHEN DAYOFWEEK(DATE(TRY_TO_TIMESTAMP(tpep_pickup_datetime))) IN (0, 6) THEN TRUE
+    ELSE FALSE
+  END AS is_weekend,
+  
+  -- Month attributes
+  MONTH(DATE(TRY_TO_TIMESTAMP(tpep_pickup_datetime))) AS month_num,
+  MONTHNAME(DATE(TRY_TO_TIMESTAMP(tpep_pickup_datetime))) AS month_name,
+  
+  -- Quarter and Year
+  QUARTER(DATE(TRY_TO_TIMESTAMP(tpep_pickup_datetime))) AS quarter,
+  YEAR(DATE(TRY_TO_TIMESTAMP(tpep_pickup_datetime))) AS year
+
 FROM {{ ref('stg_yellow_tripdata') }}
+WHERE tpep_pickup_datetime IS NOT NULL

@@ -4,23 +4,50 @@ models:
   - name: dim_date
     description: Date dimension generated from pickup dates.
     columns:
-      - name: date
-        description: Unique trip date.
+      - name: date_id
+        description: Unique date identifier (same as date column).
         tests: [unique, not_null]
-      - name: weekday_num
-        description: Numeric day of week (1=Sunday, 7=Saturday).
+      - name: date
+        description: Calendar date.
+        tests: [unique, not_null]
+      - name: day_of_week
+        description: Numeric day of week (0=Sunday, 6=Saturday) from Snowflake DAYOFWEEK().
         tests:
           - accepted_values:
-              values: [1, 2, 3, 4, 5, 6, 7]
-      - name: weekday_name
+              values: [0, 1, 2, 3, 4, 5, 6]
+      - name: day_name
         description: Name of the weekday.
-        tests:
-          - not_null
+        tests: [not_null]
+      - name: day_of_month
+        description: Day of the month (1-31).
+        tests: [not_null]
+      - name: day_of_year
+        description: Day of the year (1-366).
+        tests: [not_null]
+      - name: week_of_year
+        description: Week number of the year.
+        tests: [not_null]
       - name: is_weekend
         description: Boolean flag for Saturday/Sunday.
         tests:
           - accepted_values:
               values: [true, false]
+      - name: month_num
+        description: Month number (1-12).
+        tests:
+          - accepted_values:
+              values: [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12]
+      - name: month_name
+        description: Name of the month.
+        tests: [not_null]
+      - name: quarter
+        description: Quarter of the year (1-4).
+        tests:
+          - accepted_values:
+              values: [1, 2, 3, 4]
+      - name: year
+        description: Calendar year.
+        tests: [not_null]
 
   - name: dim_payment
     description: Lookup table for payment type descriptions.
@@ -30,10 +57,9 @@ models:
         tests: [unique, not_null]
       - name: payment_desc
         description: Description of payment method.
-        tests:
-          - not_null
+        tests: [not_null]
 
-  - name: dim_ratecode
+  - name: dim_rate_code  # Fixed model name to match your SQL
     description: Lookup for RatecodeID to description mapping.
     columns:
       - name: ratecodeid
@@ -41,8 +67,20 @@ models:
         tests: [unique, not_null]
       - name: ratecode_desc
         description: Description of the rate code.
-        tests:
-          - not_null
+        tests: [not_null]
+
+  - name: dim_vendor
+    description: Lookup table for taxi vendor information.
+    columns:
+      - name: vendorid
+        description: Unique vendor identifier.
+        tests: [unique, not_null]
+      - name: vendor_short_name
+        description: Vendor abbreviation (CMT, VTS).
+        tests: [not_null]
+      - name: vendor_full_name
+        description: Full vendor company name.
+        tests: [not_null]
 
   - name: dim_location_zone
     description: Lookup table for taxi pickup/dropoff zones from CSV.
@@ -52,14 +90,10 @@ models:
         tests: [unique, not_null]
       - name: Borough
         description: Borough the location belongs to.
-        tests:
-          - not_null
+        tests: [not_null]
       - name: zone_name
         description: Name of the taxi zone.
-        tests:
-          - not_null
+        tests: [not_null]
       - name: service_zone
         description: Service area designation.
-        tests:
-          - not_null
-
+        tests: [not_null]
