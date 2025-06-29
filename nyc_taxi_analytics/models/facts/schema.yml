@@ -11,43 +11,92 @@ models:
         tests: [unique, not_null]
       - name: trip_date
         description: Trip date (FK to dim_date).
+        tests: [not_null]
       - name: pickup_ts
         description: Pickup timestamp.
+        tests: [not_null]
       - name: dropoff_ts
         description: Dropoff timestamp.
+        tests: [not_null]
       - name: pickup_hour
         description: Hour extracted from pickup_ts.
+        tests:
+          - dbt_utils.expression_is_true:
+              expression: ">= 0 and <= 23"
       - name: pickup_weekday_num
         description: Numeric day of week (1-7).
+        tests:
+          - accepted_values:
+              values: [1, 2, 3, 4, 5, 6, 7]
       - name: trip_duration_min
         description: Trip duration in minutes.
+        tests:
+          - dbt_utils.expression_is_true:
+              expression: ">= 0"
       - name: passenger_count
         description: Number of passengers.
+        tests:
+          - dbt_utils.expression_is_true:
+              expression: ">= 0"
       - name: trip_distance
         description: Trip distance in miles.
+        tests:
+          - dbt_utils.expression_is_true:
+              expression: ">= 0"
       - name: ratecodeid
         description: FK to dim_ratecode.
+        tests: [not_null]
       - name: payment_type
         description: FK to dim_payment.
+        tests: [not_null]
       - name: pulocationid
         description: FK to dim_location_zone (pickup).
+        tests: [not_null]
       - name: dolocationid
         description: FK to dim_location_zone (dropoff).
+        tests: [not_null]
       - name: fare_amount
         description: Fare charged for the trip.
+        tests:
+          - dbt_utils.expression_is_true:
+              expression: ">= 0"
       - name: extra
         description: Extra charges.
+        tests:
+          - dbt_utils.expression_is_true:
+              expression: ">= 0"
       - name: mta_tax
         description: MTA tax.
+        tests:
+          - dbt_utils.expression_is_true:
+              expression: ">= 0"
       - name: tip_amount
         description: Tip paid.
+        tests:
+          - dbt_utils.expression_is_true:
+              expression: ">= 0"
       - name: tolls_amount
         description: Toll charges.
+        tests:
+          - dbt_utils.expression_is_true:
+              expression: ">= 0"
       - name: improvement_surcharge
         description: Additional surcharge.
+        tests:
+          - dbt_utils.expression_is_true:
+              expression: ">= 0"
       - name: congestion_surcharge
         description: Congestion charge.
+        tests:
+          - dbt_utils.expression_is_true:
+              expression: ">= 0"
       - name: airport_fee
         description: Airport fee if applicable.
+        tests:
+          - dbt_utils.expression_is_true:
+              expression: ">= 0"
       - name: total_amount
         description: Total amount charged for the trip.
+        tests:
+          - dbt_utils.expression_is_true:
+              expression: ">= 0"

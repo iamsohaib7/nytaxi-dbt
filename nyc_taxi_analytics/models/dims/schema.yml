@@ -9,10 +9,18 @@ models:
         tests: [unique, not_null]
       - name: weekday_num
         description: Numeric day of week (1=Sunday, 7=Saturday).
+        tests:
+          - accepted_values:
+              values: [1, 2, 3, 4, 5, 6, 7]
       - name: weekday_name
         description: Name of the weekday.
+        tests:
+          - not_null
       - name: is_weekend
         description: Boolean flag for Saturday/Sunday.
+        tests:
+          - accepted_values:
+              values: [true, false]
 
   - name: dim_payment
     description: Lookup table for payment type descriptions.
@@ -22,6 +30,8 @@ models:
         tests: [unique, not_null]
       - name: payment_desc
         description: Description of payment method.
+        tests:
+          - not_null
 
   - name: dim_ratecode
     description: Lookup for RatecodeID to description mapping.
@@ -31,6 +41,8 @@ models:
         tests: [unique, not_null]
       - name: ratecode_desc
         description: Description of the rate code.
+        tests:
+          - not_null
 
   - name: dim_location_zone
     description: Lookup table for taxi pickup/dropoff zones from CSV.
@@ -40,7 +52,14 @@ models:
         tests: [unique, not_null]
       - name: Borough
         description: Borough the location belongs to.
+        tests:
+          - not_null
       - name: zone_name
         description: Name of the taxi zone.
+        tests:
+          - not_null
       - name: service_zone
         description: Service area designation.
+        tests:
+          - not_null
+
