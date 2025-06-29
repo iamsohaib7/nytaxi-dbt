@@ -4,7 +4,7 @@ with daily_metrics as (
   select
     f.trip_date,
     d.date,
-    d.weekday_name,
+    d.day_name,
     d.day_of_week,
     d.is_weekend,
     d.month_name,
